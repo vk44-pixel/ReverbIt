@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReverbIt - Slowed & Reverb Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+            },
+            night: {
+              900: '#090a10',
+              850: '#0d0f17',
+              800: '#121622',
+              700: '#1a2030',
+              600: '#262f45',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Range Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      background: #1a2030;
+      border-radius: 9999px;
+      height: 6px;
+      outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #a855f7;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
+      transition: all 0.15s ease-in-out;
+      border: 2px solid #ffffff;
+    }
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.95);
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #a855f7;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.7);
+      border: 2px solid #ffffff;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090a10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #262f45;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #7c3aed;
+    }
+
+    /* Ambient Glow Effects */
+    .glow-purple {
+      box-shadow: 0 0 45px -10px rgba(139, 92, 246, 0.35);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 35px -8px rgba(6, 182, 212, 0.25);
+    }
+    .neon-text-purple {
+      text-shadow: 0 0 12px rgba(192, 132, 252, 0.6);
+    }
+  </style>
+</head>
+<body class="bg-night-900 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-purple-600 selection:text-white">
+
+  <header class="border-b border-night-700/80 bg-night-850/70 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-500 to-cyan-400 p-[1px] shadow-lg shadow-purple-500/20">
+          <div class="w-full h-full bg-night-900 rounded-[11px] flex items-center justify-center">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-indigo-300 to-cyan-300 bg-clip-text text-transparent">
+            ReverbIt
+          </span>
+          <span class="text-[10px] font-mono uppercase tracking-widest text-purple-400 ml-1.5 px-1.5 py-0.5 rounded bg-purple-950/60 border border-purple-800/40">Studio</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-4">
+        <!-- Preset Quick Bar -->
+        <button id="loadDemoBtn" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-night-700 hover:bg-night-600 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 border border-night-600/60">
+          <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Try Demo Audio
+        </button>
+
+        <a href="#quickGuide" class="text-xs text-slate-400 hover:text-purple-300 transition-colors hidden sm:inline-flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          How It Works
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+    
+    <!-- Toast notifications container -->
+    <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Top Dropzone / Track Info Panel -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      
+      <!-- Upload Drop Area -->
+      <div class="lg:col-span-5 flex flex-col">
+        <div id="dropZone" class="group relative flex-1 min-h-[170px] border-2 border-dashed border-night-600 hover:border-purple-500 rounded-2xl bg-night-850/60 p-6 flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer overflow-hidden glow-purple">
+          <input type="file" id="audioFileInput" accept="audio/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+          
+          <div class="w-12 h-12 rounded-2xl bg-purple-950/70 border border-purple-800/50 flex items-center justify-center text-purple-400 group-hover:scale-110 group-hover:bg-purple-900 transition-transform duration-300 mb-3 shadow-inner">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+          </div>
+          
+          <h2 class="text-sm font-semibold text-white group-hover:text-purple-300 transition-colors">
+            Drop your song or click to browse
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Supports MP3, WAV, AAC, FLAC, M4A & OGG • Instant processing
+          </p>
+          <div class="mt-3 flex items-center gap-2">
+            <span class="text-[11px] font-mono bg-night-700/80 px-2 py-0.5 rounded text-purple-300 border border-night-600">Pure In-Browser</span>
+            <span class="text-[11px] font-mono bg-night-700/80 px-2 py-0.5 rounded text-cyan-300 border border-night-600">Preserves Pitch</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Track & Live Visualizer Display -->
+      <div class="lg:col-span-7 bg-night-850/90 border border-night-700/80 rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden shadow-xl">
+        <div class="flex items-start justify-between gap-4 z-10">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span id="audioStatusBadge" class="w-2.5 h-2.5 rounded-full bg-slate-500 animate-pulse"></span>
+              <span id="audioStatusText" class="text-xs font-mono uppercase tracking-wider text-slate-400">No Audio Loaded</span>
+            </div>
+            <h3 id="trackTitle" class="text-base sm:text-lg font-bold text-white truncate max-w-sm sm:max-w-md">
+              Select or drop an audio track to start
+            </h3>
+            <p id="trackMeta" class="text-xs text-slate-400 font-mono">00:00 / 00:00 • 44.1 kHz</p>
+          </div>
+
+          <!-- Quick Action: Export / Download -->
+          <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+            <button id="renderExportBtn" disabled class="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all duration-200 bg-night-700 text-slate-500 cursor-not-allowed border border-night-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <span>Export WAV</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Waveform / Spectrum Canvas Visualizer -->
+        <div class="mt-4 relative bg-night-900/90 rounded-xl p-2 border border-night-700/60 h-28 flex flex-col justify-end">
+          <canvas id="visualizerCanvas" class="w-full h-full block rounded-lg cursor-pointer"></canvas>
+          <div id="visualizerOverlay" class="absolute inset-0 flex items-center justify-center pointer-events-none text-xs text-slate-500 font-mono">
+            Awaiting Audio Playback
+          </div>
+        </div>
+
+        <!-- Interactive Scrub Bar & Time -->
+        <div class="mt-3 space-y-1 z-10">
+          <div class="flex items-center gap-3">
+            <span id="currentTimeDisplay" class="text-xs font-mono text-purple-300 w-10 text-right">0:00</span>
+            <div class="relative flex-1 flex items-center">
+              <input type="range" id="seekSlider" min="0" max="100" value="0" step="0.1" class="w-full accent-purple-500 cursor-pointer">
+            </div>
+            <span id="totalTimeDisplay" class="text-xs font-mono text-slate-400 w-10">0:00</span>
+          </div>
+        </div>
+
+        <!-- Playback Controls Bar -->
+        <div class="mt-3 pt-3 border-t border-night-700/60 flex items-center justify-between flex-wrap gap-2 z-10">
+          <div class="flex items-center gap-3">
+            <button id="rewindBtn" title="Rewind 5s" class="p-2 rounded-lg bg-night-700/80 hover:bg-night-600 text-slate-300 hover:text-white transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/>
+              </svg>
+            </button>
+
+            <button id="playPauseBtn" disabled class="px-5 py-2.5 rounded-xl bg-purple-600/50 text-slate-400 font-semibold text-sm flex items-center gap-2 cursor-not-allowed transition shadow-lg">
+              <svg id="playIcon" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span id="playBtnLabel">Play</span>
+            </button>
+
+            <button id="forwardBtn" title="Skip 5s" class="p-2 rounded-lg bg-night-700/80 hover:bg-night-600 text-slate-300 hover:text-white transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/>
+              </svg>
+            </button>
+
+            <button id="loopBtn" title="Toggle Loop" class="px-2.5 py-1.5 rounded-lg text-xs font-mono bg-night-700/50 text-slate-400 hover:text-white transition border border-night-600/50 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              <span id="loopLabel">Loop Off</span>
+            </button>
+          </div>
+
+          <!-- Visualizer Mode Toggle -->
+          <div class="flex items-center gap-1 bg-night-700/60 p-1 rounded-lg border border-night-600/50">
+            <button id="vizModeBars" class="px-2 py-1 text-[11px] font-mono rounded bg-purple-600 text-white font-medium">Bars</button>
+            <button id="vizModeWave" class="px-2 py-1 text-[11px] font-mono rounded text-slate-400 hover:text-white">Wave</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="bg-night-850/70 border border-night-700/70 rounded-2xl p-4 sm:p-5">
+      <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+          </svg>
+          <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200">Aesthetic Sound Presets</h2>
+        </div>
+        <span class="text-xs text-slate-400">One-click iconic vibes</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+        <button data-preset="classic" class="preset-btn px-3 py-2.5 rounded-xl border border-purple-500/50 bg-purple-950/40 text-left transition hover:scale-[1.02] flex flex-col justify-between">
+          <span class="text-xs font-bold text-purple-300">🌌 Classic Slowed</span>
+          <span class="text-[10px] text-slate-400 font-mono mt-1">0.85x • Pitch Fixed</span>
+        </button>
+
+        <button data-preset="lofi" class="preset-btn px-3 py-2.5 rounded-xl border border-night-600/80 bg-night-800/80 hover:border-night-500 text-left transition hover:scale-[1.02] flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-200">🎧 Bedroom Lo-Fi</span>
+          <span class="text-[10px] text-slate-400 font-mono mt-1">0.82x • Warm Bass</span>
+        </button>
+
+        <button data-preset="bathroom" class="preset-btn px-3 py-2.5 rounded-xl border border-night-600/80 bg-night-800/80 hover:border-night-500 text-left transition hover:scale-[1.02] flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-200">🛁 Party Bathroom</span>
+          <span class="text-[10px] text-slate-400 font-mono mt-1">Huge Wet Echo</span>
+        </button>
+
+        <button data-preset="submerged" class="preset-btn px-3 py-2.5 rounded-xl border border-night-600/80 bg-night-800/80 hover:border-night-500 text-left transition hover:scale-[1.02] flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-200">🌊 Submerged</span>
+          <span class="text-[10px] text-slate-400 font-mono mt-1">0.78x • Deep Muffle</span>
+        </button>
+
+        <button data-preset="bassboost" class="preset-btn px-3 py-2.5 rounded-xl border border-night-600/80 bg-night-800/80 hover:border-night-500 text-left transition hover:scale-[1.02] flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-200">🔊 Sub Bass Boost</span>
+          <span class="text-[10px] text-slate-400 font-mono mt-1">+9dB Bass • Thick</span>
+        </button>
+
+        <button data-preset="tape" class="preset-btn px-3 py-2.5 rounded-xl border border-night-600/80 bg-night-800/80 hover:border-night-500 text-left transition hover:scale-[1.02] flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-200">📼 Vintage Tape Drop</span>
+          <span class="text-[10px] text-slate-400 font-mono mt-1">Pitch Drops With Tempo</span>
+        </button>
+      </div>
+    </section>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      
+      <!-- RACK 1: Speed & Pitch Engine -->
+      <section class="bg-night-850/80 border border-night-700/80 rounded-2xl p-5 flex flex-col justify-between shadow-lg">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between border-b border-night-700/70 pb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider">Speed & Pitch</h3>
+            </div>
+            <span class="text-[11px] font-mono text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800/40">Time-Stretcher</span>
+          </div>
+
+          <!-- Speed Slider -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="speedSlider" class="font-medium text-slate-300">Playback Speed</label>
+              <div class="flex items-center gap-1 font-mono text-purple-300 font-bold">
+                <span id="speedValText">0.85</span><span>x</span>
+              </div>
+            </div>
+            <input type="range" id="speedSlider" min="0.5" max="1.3" step="0.01" value="0.85" class="w-full">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>0.5x (Super Slow)</span>
+              <span>0.85x (Optimal)</span>
+              <span>1.0x (Normal)</span>
+              <span>1.3x</span>
+            </div>
+          </div>
+
+          <!-- Pitch Mode Selector (The Core Requirement: Maintain Same Pitch vs Tape Drop) -->
+          <div class="p-3 rounded-xl bg-night-800/90 border border-night-700/70 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-semibold text-slate-200">Pitch Handling</label>
+              <span id="pitchBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">Pitch Preserved</span>
+            </div>
+
+            <!-- Radio-like Toggle switches -->
+            <div class="grid grid-cols-2 gap-2">
+              <button id="modePreservePitch" class="px-3 py-2 rounded-lg text-xs font-semibold bg-purple-600 text-white border border-purple-400/40 shadow-sm transition">
+                ✓ Lock Same Pitch
+              </button>
+              <button id="modeTapeDrop" class="px-3 py-2 rounded-lg text-xs font-semibold bg-night-700 text-slate-400 hover:text-white border border-night-600 transition">
+                Tape Drop (Vinyl)
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              <span class="text-purple-300 font-medium">Lock Same Pitch</span> slows the track tempo while leaving the singer and instrument musical key exactly as original!
+            </p>
+          </div>
+
+          <!-- Semi-tone fine pitch adjustment -->
+          <div id="semitoneBox" class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="pitchShiftSlider" class="font-medium text-slate-300">Pitch Offset (Semitones)</label>
+              <span id="pitchShiftValText" class="font-mono text-cyan-300 font-bold">0 st</span>
+            </div>
+            <input type="range" id="pitchShiftSlider" min="-12" max="12" step="1" value="0" class="w-full accent-cyan-400">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>-12 st (Octave Down)</span>
+              <span>0 (Original Key)</span>
+              <span>+12 st (Octave Up)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-night-700/60 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Engine: WebAudio TimeStretch</span>
+          <button id="resetSpeedBtn" class="text-xs text-purple-400 hover:underline">Reset Tempo</button>
+        </div>
+      </section>
+
+      <!-- RACK 2: Reverb & Ambience Engine -->
+      <section class="bg-night-850/80 border border-night-700/80 rounded-2xl p-5 flex flex-col justify-between shadow-lg">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between border-b border-night-700/70 pb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider">Dreamy Reverb</h3>
+            </div>
+            <span class="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">Convolution DSP</span>
+          </div>
+
+          <!-- Reverb Wet/Dry Mix -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="reverbMixSlider" class="font-medium text-slate-300">Reverb Wetness (Mix)</label>
+              <div class="font-mono text-purple-300 font-bold">
+                <span id="reverbMixValText">45</span>%
+              </div>
+            </div>
+            <input type="range" id="reverbMixSlider" min="0" max="100" step="1" value="45" class="w-full">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Dry (0%)</span>
+              <span>Dreamy (45%)</span>
+              <span>Fully Wet (100%)</span>
+            </div>
+          </div>
+
+          <!-- Reverb Decay Time / Size -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="reverbDecaySlider" class="font-medium text-slate-300">Decay Time (Room Size)</label>
+              <div class="font-mono text-purple-300 font-bold">
+                <span id="reverbDecayValText">4.2</span>s
+              </div>
+            </div>
+            <input type="range" id="reverbDecaySlider" min="0.8" max="12.0" step="0.2" value="4.2" class="w-full">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>0.8s (Studio)</span>
+              <span>4.2s (Hall)</span>
+              <span>12s (Infinite Void)</span>
+            </div>
+          </div>
+
+          <!-- High Damping (Velvety warmth) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="reverbDampSlider" class="font-medium text-slate-300">Reverb Tone Warmth (Damping)</label>
+              <div class="font-mono text-purple-300 font-bold">
+                <span id="reverbDampValText">3500</span>Hz
+              </div>
+            </div>
+            <input type="range" id="reverbDampSlider" min="1000" max="16000" step="250" value="3500" class="w-full">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Muffled (1kHz)</span>
+              <span>Velvet Warm</span>
+              <span>Airy Bright (16kHz)</span>
+            </div>
+          </div>
+
+          <!-- Pre-delay -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="reverbPredelaySlider" class="font-medium text-slate-300">Pre-Delay</label>
+              <div class="font-mono text-purple-300 font-bold">
+                <span id="reverbPredelayValText">30</span>ms
+              </div>
+            </div>
+            <input type="range" id="reverbPredelaySlider" min="0" max="150" step="5" value="30" class="w-full">
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-night-700/60 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Stereo Cross-Reflections</span>
+          <button id="resetReverbBtn" class="text-xs text-purple-400 hover:underline">Reset Reverb</button>
+        </div>
+      </section>
+
+      <!-- RACK 3: Boost, Tone Filter & Master Gain -->
+      <section class="bg-night-850/80 border border-night-700/80 rounded-2xl p-5 flex flex-col justify-between shadow-lg">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between border-b border-night-700/70 pb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <h3 class="text-sm font-bold text-white uppercase tracking-wider">Boost & Lo-Fi Tone</h3>
+            </div>
+            <span class="text-[11px] font-mono text-pink-400 bg-pink-950/60 px-2 py-0.5 rounded border border-pink-800/40">Analog Color</span>
+          </div>
+
+          <!-- Bass Boost Slider -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="bassBoostSlider" class="font-medium text-slate-300 flex items-center gap-1.5">
+                <span>Sub Bass Boost</span>
+                <span class="text-[10px] text-pink-400 font-mono">(90Hz)</span>
+              </label>
+              <div class="font-mono text-pink-300 font-bold">
+                <span id="bassBoostValText">+4.5</span>dB
+              </div>
+            </div>
+            <input type="range" id="bassBoostSlider" min="0" max="15" step="0.5" value="4.5" class="w-full accent-pink-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Flat (0dB)</span>
+              <span>Punchy (+4.5dB)</span>
+              <span>Sub Destroyer (+15dB)</span>
+            </div>
+          </div>
+
+          <!-- Lo-Fi Filter (High-cut / Muffle) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="lofiFilterSlider" class="font-medium text-slate-300 flex items-center gap-1.5">
+                <span>Lo-Fi High Cut (Muffle)</span>
+              </label>
+              <div class="font-mono text-pink-300 font-bold">
+                <span id="lofiFilterValText">12000</span>Hz
+              </div>
+            </div>
+            <input type="range" id="lofiFilterSlider" min="1500" max="20000" step="250" value="12000" class="w-full accent-pink-500">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Underwater (1.5kHz)</span>
+              <span>Cozy Lo-Fi (8kHz)</span>
+              <span>Clear (20kHz)</span>
+            </div>
+          </div>
+
+          <!-- Stereo Width Expansion -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="stereoWidthSlider" class="font-medium text-slate-300">Stereo Spatial Width</label>
+              <div class="font-mono text-cyan-300 font-bold">
+                <span id="stereoWidthValText">125</span>%
+              </div>
+            </div>
+            <input type="range" id="stereoWidthSlider" min="50" max="200" step="5" value="125" class="w-full accent-cyan-400">
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>Mono (50%)</span>
+              <span>Normal (100%)</span>
+              <span>Ultra-Wide 3D (200%)</span>
+            </div>
+          </div>
+
+          <!-- Master Volume Gain & Soft Limiter -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <label for="masterGainSlider" class="font-medium text-slate-300">Master Output Gain</label>
+              <div class="font-mono text-slate-200 font-bold">
+                <span id="masterGainValText">100</span>%
+              </div>
+            </div>
+            <input type="range" id="masterGainSlider" min="10" max="160" step="1" value="100" class="w-full">
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-night-700/60 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Safe Soft-Clip Limiter Enabled</span>
+          <button id="resetToneBtn" class="text-xs text-purple-400 hover:underline">Reset Tone</button>
+        </div>
+      </section>
+
+    </div>
+
+    <div id="exportModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-night-850 border border-purple-500/40 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4 glow-purple">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center">
+              <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+            </div>
+            <h3 class="text-base font-bold text-white">Rendering High-Res Audio...</h3>
+          </div>
+          <button id="closeExportModalBtn" class="text-slate-400 hover:text-white text-lg">&times;</button>
+        </div>
+
+        <p class="text-xs text-slate-300">
+          ReverbIt is processing your track with full convolution reverb, time-stretch pitch preservation, and sub-bass shaping in lossless 16-bit 44.1kHz WAV.
+        </p>
+
+        <!-- Progress Bar -->
+        <div class="space-y-1.5">
+          <div class="w-full bg-night-900 rounded-full h-2.5 border border-night-700 overflow-hidden">
+            <div id="exportProgressBar" class="bg-gradient-to-r from-purple-500 via-indigo-400 to-cyan-400 h-2.5 rounded-full w-0 transition-all duration-150"></div>
+          </div>
+          <div class="flex justify-between text-[11px] font-mono text-slate-400">
+            <span id="exportStatusText">Initializing audio graph...</span>
+            <span id="exportPercentText">0%</span>
+          </div>
+        </div>
+
+        <div id="exportActionContainer" class="hidden pt-2">
+          <a id="downloadWavAnchor" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Download Processed WAV
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Educational & How It Works Accordion -->
+    <section id="quickGuide" class="mt-8 border border-night-700/60 rounded-2xl p-6 bg-night-850/40">
+      <h3 class="text-sm font-bold uppercase tracking-wider text-purple-300 mb-3 flex items-center gap-2">
+        <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        Understanding Pitch-Preserved Slowing vs Tape Drop
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300 leading-relaxed">
+        <div class="bg-night-900/60 p-4 rounded-xl border border-night-700/50 space-y-1.5">
+          <span class="font-bold text-purple-300 flex items-center gap-1.5">
+            <span>✨</span> Lock Same Pitch (Preserve)
+          </span>
+          <p class="text-slate-400">
+            Uses Time-Stretch overlap algorithms to slow down the speed without altering the musical key. The singer does not sound like a low monster, keeping their exact natural timbre while floating over a relaxed tempo.
+          </p>
+        </div>
+
+        <div class="bg-night-900/60 p-4 rounded-xl border border-night-700/50 space-y-1.5">
+          <span class="font-bold text-indigo-300 flex items-center gap-1.5">
+            <span>📼</span> Tape / Vinyl Slowdown
+          </span>
+          <p class="text-slate-400">
+            Slows the tape speed directly. In this mode, pitch drops proportionally with speed (the classic 90s cassette and chopped-and-screwed sound), creating heavy dark baritone tones.
+          </p>
+        </div>
+
+        <div class="bg-night-900/60 p-4 rounded-xl border border-night-700/50 space-y-1.5">
+          <span class="font-bold text-pink-300 flex items-center gap-1.5">
+            <span>🛁</span> Stereo Convolution Reverb
+          </span>
+          <p class="text-slate-400">
+            Synthesizes an acoustic impulse response mimicking large cathedral halls, empty bedrooms, or echoing party bathrooms with high-frequency absorption and stereo cross-feedback.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-night-700/50 py-5 text-center text-xs text-slate-500 font-mono mt-auto">
+    ReverbIt Audio Workstation • Fast In-Browser Web Audio DSP & WAV Exporter
+  </footer>
+
+  <!-- Hidden Audio element for native pitch-preserving time-stretch playback engine -->
+  <audio id="nativeAudioElement" crossOrigin="anonymous" preload="auto" class="hidden"></audio>
+
+  <script>
+    /* Audio Workstation State */
+    const state = {
+      audioBuffer: null,
+      audioFileName: 'track',
+      audioSrcUrl: null,
+      isPlaying: false,
+      currentTime: 0,
+      duration: 0,
+      loop: false,
+      isDemo: false,
+      vizMode: 'bars', // 'bars' | 'wave'
+      
+      // DSP Parameters
+      speed: 0.85,
+      preservePitch: true,
+      pitchSemitones: 0,
+      
+      // Reverb
+      reverbWet: 0.45,
+      reverbDecay: 4.2,
+      reverbDamping: 3500,
+      reverbPredelay: 0.030, // seconds
+      
+      // Tone & Filters
+      bassBoostDb: 4.5,
+      lofiCutoffHz: 12000,
+      stereoWidth: 1.25,
+      masterGain: 1.0,
+      
+      // Audio Graph Nodes
+      audioCtx: null,
+      sourceNode: null,
+      bassFilter: null,
+      lofiFilter: null,
+      convolverNode: null,
+      dryGainNode: null,
+      wetGainNode: null,
+      delayNode: null,
+      dampFilterNode: null,
+      stereoLeftSplit: null,
+      stereoRightSplit: null,
+      masterGainNode: null,
+      analyserNode: null,
+      dynamicsCompressor: null
+    };
+
+    /* DOM References */
+    const dropZone = document.getElementById('dropZone');
+    const audioFileInput = document.getElementById('audioFileInput');
+    const loadDemoBtn = document.getElementById('loadDemoBtn');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const playIcon = document.getElementById('playIcon');
+    const playBtnLabel = document.getElementById('playBtnLabel');
+    const rewindBtn = document.getElementById('rewindBtn');
+    const forwardBtn = document.getElementById('forwardBtn');
+    const loopBtn = document.getElementById('loopBtn');
+    const loopLabel = document.getElementById('loopLabel');
+    const seekSlider = document.getElementById('seekSlider');
+    const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+    const totalTimeDisplay = document.getElementById('totalTimeDisplay');
+    const trackTitle = document.getElementById('trackTitle');
+    const trackMeta = document.getElementById('trackMeta');
+    const audioStatusBadge = document.getElementById('audioStatusBadge');
+    const audioStatusText = document.getElementById('audioStatusText');
+    const renderExportBtn = document.getElementById('renderExportBtn');
+    const visualizerCanvas = document.getElementById('visualizerCanvas');
+    const visualizerOverlay = document.getElementById('visualizerOverlay');
+    const nativeAudio = document.getElementById('nativeAudioElement');
+    const toastContainer = document.getElementById('toastContainer');
+
+    // Controls
+    const speedSlider = document.getElementById('speedSlider');
+    const speedValText = document.getElementById('speedValText');
+    const modePreservePitch = document.getElementById('modePreservePitch');
+    const modeTapeDrop = document.getElementById('modeTapeDrop');
+    const pitchBadge = document.getElementById('pitchBadge');
+    const pitchShiftSlider = document.getElementById('pitchShiftSlider');
+    const pitchShiftValText = document.getElementById('pitchShiftValText');
+
+    const reverbMixSlider = document.getElementById('reverbMixSlider');
+    const reverbMixValText = document.getElementById('reverbMixValText');
+    const reverbDecaySlider = document.getElementById('reverbDecaySlider');
+    const reverbDecayValText = document.getElementById('reverbDecayValText');
+    const reverbDampSlider = document.getElementById('reverbDampSlider');
+    const reverbDampValText = document.getElementById('reverbDampValText');
+    const reverbPredelaySlider = document.getElementById('reverbPredelaySlider');
+    const reverbPredelayValText = document.getElementById('reverbPredelayValText');
+
+    const bassBoostSlider = document.getElementById('bassBoostSlider');
+    const bassBoostValText = document.getElementById('bassBoostValText');
+    const lofiFilterSlider = document.getElementById('lofiFilterSlider');
+    const lofiFilterValText = document.getElementById('lofiFilterValText');
+    const stereoWidthSlider = document.getElementById('stereoWidthSlider');
+    const stereoWidthValText = document.getElementById('stereoWidthValText');
+    const masterGainSlider = document.getElementById('masterGainSlider');
+    const masterGainValText = document.getElementById('masterGainValText');
+
+    // Export Modal
+    const exportModal = document.getElementById('exportModal');
+    const closeExportModalBtn = document.getElementById('closeExportModalBtn');
+    const exportProgressBar = document.getElementById('exportProgressBar');
+    const exportStatusText = document.getElementById('exportStatusText');
+    const exportPercentText = document.getElementById('exportPercentText');
+    const exportActionContainer = document.getElementById('exportActionContainer');
+    const downloadWavAnchor = document.getElementById('downloadWavAnchor');
+
+    // Canvas 2D
+    const canvasCtx = visualizerCanvas.getContext('2d');
+    let animFrameId = null;
+
+    /* Helper: Show in-app styled Toast */
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      const colors = {
+        info: 'bg-night-800 border-purple-500/50 text-purple-200',
+        success: 'bg-night-800 border-emerald-500/50 text-emerald-200',
+        error: 'bg-night-800 border-rose-500/50 text-rose-200',
+      };
+      toast.className = `p-3 rounded-xl border ${colors[type] || colors.info} shadow-xl backdrop-blur-md text-xs font-medium flex items-center gap-2 transform transition-all duration-300 opacity-0 translate-y-2`;
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-emerald-400' : type === 'error' ? 'bg-rose-400' : 'bg-purple-400'}"></span>
+        <span>${message}</span>
+      `;
+      toastContainer.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    /* Format Time */
+    function formatTime(seconds) {
+      if (isNaN(seconds) || seconds < 0) return '0:00';
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    /* Algorithmic Impulse Response Generator for Reverb */
+    function createReverbImpulse(ctx, decayTime, dampingHz) {
+      const rate = ctx.sampleRate;
+      const length = Math.max(1, Math.floor(rate * decayTime));
+      const impulse = ctx.createBuffer(2, length, rate);
+      const left = impulse.getChannelData(0);
+      const right = impulse.getChannelData(1);
+
+      // Pre-calculate exponential decay curve and simple frequency absorption
+      const decayBase = Math.log(0.001) / length;
+      
+      // Simulate room reflection clusters + diffuse tail
+      for (let i = 0; i < length; i++) {
+        // Exponential decay envelope
+        const env = Math.exp(decayBase * i);
+        
+        // Random white/pink noise burst
+        const noiseL = (Math.random() * 2 - 1);
+        const noiseR = (Math.random() * 2 - 1);
+        
+        // Slight early reflections comb pattern
+        const earlyComb = i < rate * 0.08 ? (Math.sin(i * 0.05) * 0.6 + 0.4) : 1.0;
+
+        left[i] = noiseL * env * earlyComb;
+        right[i] = noiseR * env * earlyComb;
+      }
+
+      return impulse;
+    }
+
+    /* Initialize Web Audio Graph connected to HTMLAudioElement */
+    function initAudioGraph() {
+      if (state.audioCtx) return;
+
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      state.audioCtx = new AudioContext();
+
+      // Media Element Source (Handles native pitch-preservation time stretching flawlessly)
+      state.sourceNode = state.audioCtx.createMediaElementSource(nativeAudio);
+
+      // Bass Boost: Low Shelf Filter at 95Hz
+      state.bassFilter = state.audioCtx.createBiquadFilter();
+      state.bassFilter.type = 'lowshelf';
+      state.bassFilter.frequency.value = 95;
+      state.bassFilter.gain.value = state.bassBoostDb;
+
+      // Lo-Fi Cutoff: Low Pass Filter
+      state.lofiFilter = state.audioCtx.createBiquadFilter();
+      state.lofiFilter.type = 'lowpass';
+      state.lofiFilter.frequency.value = state.lofiCutoffHz;
+      state.lofiFilter.Q.value = 0.7;
+
+      // Reverb Send Architecture
+      // 1. Dry path
+      state.dryGainNode = state.audioCtx.createGain();
+      state.dryGainNode.gain.value = 1.0 - (state.reverbWet * 0.5);
+
+      // 2. Wet path with Pre-delay & Convolver & Damping Filter
+      state.delayNode = state.audioCtx.createDelay(1.0);
+      state.delayNode.delayTime.value = state.reverbPredelay;
+
+      state.dampFilterNode = state.audioCtx.createBiquadFilter();
+      state.dampFilterNode.type = 'lowpass';
+      state.dampFilterNode.frequency.value = state.reverbDamping;
+
+      state.convolverNode = state.audioCtx.createConvolver();
+      state.convolverNode.buffer = createReverbImpulse(state.audioCtx, state.reverbDecay, state.reverbDamping);
+
+      state.wetGainNode = state.audioCtx.createGain();
+      state.wetGainNode.gain.value = state.reverbWet;
+
+      // Stereo Width / Mid-Side Sim or Panner
+      // Dynamics Compressor (Limiter prevents digital clipping on heavy bass)
+      state.dynamicsCompressor = state.audioCtx.createDynamicsCompressor();
+      state.dynamicsCompressor.threshold.value = -1.5;
+      state.dynamicsCompressor.knee.value = 8.0;
+      state.dynamicsCompressor.ratio.value = 8.0;
+      state.dynamicsCompressor.attack.value = 0.003;
+      state.dynamicsCompressor.release.value = 0.15;
+
+      // Master Gain
+      state.masterGainNode = state.audioCtx.createGain();
+      state.masterGainNode.gain.value = state.masterGain;
+
+      // Analyser for visualizer
+      state.analyserNode = state.audioCtx.createAnalyser();
+      state.analyserNode.fftSize = 256;
+      state.analyserNode.smoothingTimeConstant = 0.82;
+
+      // Connect Nodes:
+      // Source -> Bass -> LoFi Cutoff -> [Split to Dry & Wet]
+      state.sourceNode.connect(state.bassFilter);
+      state.bassFilter.connect(state.lofiFilter);
+
+      // Dry Path: LoFi -> dryGain -> Master
+      state.lofiFilter.connect(state.dryGainNode);
+      state.dryGainNode.connect(state.dynamicsCompressor);
+
+      // Wet Path: LoFi -> predelay -> dampFilter -> convolver -> wetGain -> Master
+      state.lofiFilter.connect(state.delayNode);
+      state.delayNode.connect(state.dampFilterNode);
+      state.dampFilterNode.connect(state.convolverNode);
+      state.convolverNode.connect(state.wetGainNode);
+      state.wetGainNode.connect(state.dynamicsCompressor);
+
+      // Limiter -> Master Gain -> Analyser -> Destination
+      state.dynamicsCompressor.connect(state.masterGainNode);
+      state.masterGainNode.connect(state.analyserNode);
+      state.analyserNode.connect(state.audioCtx.destination);
+    }
+
+    /* Apply updated DSP settings in real-time */
+    function applyDspSettings() {
+      // Configure HTML5 native pitch preservation and playback rate
+      if (nativeAudio) {
+        nativeAudio.playbackRate = state.speed;
+
+        // Native pitch preservation engine (HTMLMediaElement standard)
+        if (state.preservePitch) {
+          nativeAudio.preservesPitch = true;
+          if ('mozPreservesPitch' in nativeAudio) nativeAudio.mozPreservesPitch = true;
+          if ('webkitPreservesPitch' in nativeAudio) nativeAudio.webkitPreservesPitch = true;
+        } else {
+          nativeAudio.preservesPitch = false;
+          if ('mozPreservesPitch' in nativeAudio) nativeAudio.mozPreservesPitch = false;
+          if ('webkitPreservesPitch' in nativeAudio) nativeAudio.webkitPreservesPitch = false;
+        }
+      }
+
+      if (!state.audioCtx) return;
+
+      const now = state.audioCtx.currentTime;
+
+      // Bass Boost
+      if (state.bassFilter) {
+        state.bassFilter.gain.setTargetAtTime(state.bassBoostDb, now, 0.02);
+      }
+
+      // Lo-Fi Cutoff
+      if (state.lofiFilter) {
+        state.lofiFilter.frequency.setTargetAtTime(state.lofiCutoffHz, now, 0.02);
+      }
+
+      // Reverb Mix
+      if (state.dryGainNode && state.wetGainNode) {
+        const dryVal = Math.cos(state.reverbWet * 0.5 * Math.PI);
+        const wetVal = Math.sin(state.reverbWet * 0.5 * Math.PI) * 1.25;
+        state.dryGainNode.gain.setTargetAtTime(dryVal, now, 0.02);
+        state.wetGainNode.gain.setTargetAtTime(wetVal, now, 0.02);
+      }
+
+      // Pre-delay
+      if (state.delayNode) {
+        state.delayNode.delayTime.setTargetAtTime(state.reverbPredelay, now, 0.02);
+      }
+
+      // Reverb Damping
+      if (state.dampFilterNode) {
+        state.dampFilterNode.frequency.setTargetAtTime(state.reverbDamping, now, 0.02);
+      }
+
+      // Master Gain
+      if (state.masterGainNode) {
+        state.masterGainNode.gain.setTargetAtTime(state.masterGain, now, 0.02);
+      }
+    }
+
+    /* Update Convolver IR when decay changes */
+    function refreshReverbConvolver() {
+      if (!state.audioCtx || !state.convolverNode) return;
+      try {
+        state.convolverNode.buffer = createReverbImpulse(state.audioCtx, state.reverbDecay, state.reverbDamping);
+      } catch (e) {
+        console.error('Error rebuilding impulse:', e);
+      }
+    }
+
+    /* Synthesize a Dreamy Lo-Fi / Synth Ambient Loop for instant Demo testing */
+    function generateDemoAudioBuffer() {
+      const sampleRate = 44100;
+      const duration = 12.0; // 12 seconds seamless loop
+      const length = sampleRate * duration;
+      const offlineCtx = new OfflineAudioContext(2, length, sampleRate);
+
+      // Chords in F-sharp minor: F#m9 -> Dmaj7 -> Bm7 -> C#m7
+      const chords = [
+        [185.0, 220.0, 277.18, 329.63, 440.0], // F#m9
+        [146.83, 220.0, 277.18, 369.99, 440.0], // Dmaj7
+        [123.47, 185.0, 220.0, 293.66, 369.99], // Bm7
+        [138.59, 207.65, 277.18, 329.63, 415.30] // C#m7
+      ];
+
+      const chordDuration = duration / chords.length;
+
+      chords.forEach((chord, chordIdx) => {
+        const startTime = chordIdx * chordDuration;
+        
+        chord.forEach((freq, noteIdx) => {
+          // Warm pad synthesizer
+          const osc = offlineCtx.createOscillator();
+          osc.type = noteIdx % 2 === 0 ? 'sine' : 'triangle';
+          osc.frequency.setValueAtTime(freq, startTime);
+          
+          // Subtle detune for rich analog chorusing
+          osc.detune.setValueAtTime((Math.random() - 0.5) * 12, startTime);
+
+          const gain = offlineCtx.createGain();
+          gain.gain.setValueAtTime(0.001, startTime);
+          gain.gain.linearRampToValueAtTime(0.07 / chord.length, startTime + 0.4);
+          gain.gain.setValueAtTime(0.06 / chord.length, startTime + chordDuration - 0.5);
+          gain.gain.linearRampToValueAtTime(0.001, startTime + chordDuration);
+
+          osc.connect(gain);
+          gain.connect(offlineCtx.destination);
+
+          osc.start(startTime);
+          osc.stop(startTime + chordDuration);
+        });
+
+        // Add soft mellow kick on beat 1 and beat 3
+        [0, 1.5].forEach(beatOffset => {
+          const kickTime = startTime + beatOffset;
+          const kickOsc = offlineCtx.createOscillator();
+          const kickGain = offlineCtx.createGain();
+
+          kickOsc.frequency.setValueAtTime(120, kickTime);
+          kickOsc.frequency.exponentialRampToValueAtTime(38, kickTime + 0.25);
+
+          kickGain.gain.setValueAtTime(0.35, kickTime);
+          kickGain.gain.exponentialRampToValueAtTime(0.001, kickTime + 0.35);
+
+          kickOsc.connect(kickGain);
+          kickGain.connect(offlineCtx.destination);
+
+          kickOsc.start(kickTime);
+          kickOsc.stop(kickTime + 0.35);
+        });
+      });
+
+      return offlineCtx.startRendering();
+    }
+
+    /* Convert AudioBuffer to WAV Blob */
+    function audioBufferToWavBlob(buffer) {
+      const numChannels = buffer.numberOfChannels;
+      const sampleRate = buffer.sampleRate;
+      const format = 1; // PCM
+      const bitDepth = 16;
+      
+      const bytesPerSample = bitDepth / 8;
+      const blockAlign = numChannels * bytesPerSample;
+      const dataLength = buffer.length * blockAlign;
+      const bufferLength = 44 + dataLength;
+      
+      const arrayBuffer = new ArrayBuffer(bufferLength);
+      const view = new DataView(arrayBuffer);
+
+      function writeString(offset, string) {
+        for (let i = 0; i < string.length; i++) {
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      }
+
+      /* RIFF Header */
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + dataLength, true);
+      writeString(8, 'WAVE');
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true); // Subchunk1Size
+      view.setUint16(20, format, true);
+      view.setUint16(22, numChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * blockAlign, true); // ByteRate
+      view.setUint16(32, blockAlign, true);
+      view.setUint16(34, bitDepth, true);
+      writeString(36, 'data');
+      view.setUint32(40, dataLength, true);
+
+      // Interleave channels & write PCM 16-bit
+      let offset = 44;
+      const channels = [];
+      for (let i = 0; i < numChannels; i++) {
+        channels.push(buffer.getChannelData(i));
+      }
+
+      for (let i = 0; i < buffer.length; i++) {
+        for (let ch = 0; ch < numChannels; ch++) {
+          let sample = channels[ch][i];
+          // Clamp and soft clip
+          sample = Math.max(-1, Math.min(1, sample));
+          // Scale to 16-bit signed integer
+          const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+          view.setInt16(offset, intSample, true);
+          offset += 2;
+        }
+      }
+
+      return new Blob([view], { type: 'audio/wav' });
+    }
+
+    /* Load track from File or Generated Buffer */
+    async function loadAudioFile(file) {
+      try {
+        initAudioGraph();
+        if (state.audioCtx.state === 'suspended') {
+          await state.audioCtx.resume();
+        }
+
+        const objectUrl = URL.createObjectURL(file);
+        state.audioSrcUrl = objectUrl;
+        state.audioFileName = file.name.replace(/\.[^/.]+$/, "");
+
+        trackTitle.textContent = file.name;
+        audioStatusBadge.className = 'w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse';
+        audioStatusText.textContent = 'Decoding Track...';
+
+        // Set audio source
+        nativeAudio.src = objectUrl;
+        nativeAudio.load();
+
+        // Also decode into AudioBuffer for offline rendering / metadata
+        const arrayBuffer = await file.arrayBuffer();
+        state.audioBuffer = await state.audioCtx.decodeAudioData(arrayBuffer);
+
+        state.duration = state.audioBuffer.duration;
+        totalTimeDisplay.textContent = formatTime(state.duration);
+        trackMeta.textContent = `${formatTime(state.duration)} • ${state.audioBuffer.sampleRate} Hz • ${state.audioBuffer.numberOfChannels} ch`;
+
+        enablePlayerControls();
+        showToast(`Loaded: ${file.name}`, 'success');
+      } catch (err) {
+        console.error('Audio load error:', err);
+        showToast('Failed to decode audio file. Please try another MP3 or WAV.', 'error');
+        audioStatusBadge.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        audioStatusText.textContent = 'Decoding Error';
+      }
+    }
+
+    /* Load Demo Track */
+    async function loadDemoTrack() {
+      try {
+        initAudioGraph();
+        if (state.audioCtx.state === 'suspended') {
+          await state.audioCtx.resume();
+        }
+
+        audioStatusBadge.className = 'w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse';
+        audioStatusText.textContent = 'Generating Lo-Fi Synth Demo...';
+        trackTitle.textContent = 'Nightfall Dreams (Lo-Fi Ambient Demo)';
+
+        const renderedBuffer = await generateDemoAudioBuffer();
+        state.audioBuffer = renderedBuffer;
+        state.audioFileName = 'nightfall_dreams_demo';
+        state.duration = renderedBuffer.duration;
+
+        // Convert to blob and assign to audio
+        const wavBlob = audioBufferToWavBlob(renderedBuffer);
+        const objectUrl = URL.createObjectURL(wavBlob);
+        state.audioSrcUrl = objectUrl;
+
+        nativeAudio.src = objectUrl;
+        nativeAudio.load();
+
+        totalTimeDisplay.textContent = formatTime(state.duration);
+        trackMeta.textContent = `${formatTime(state.duration)} • 44.1 kHz • Stereo Demo`;
+
+        enablePlayerControls();
+        showToast('Demo track synthesized and ready!', 'success');
+      } catch (e) {
+        console.error('Demo error:', e);
+        showToast('Could not generate demo track.', 'error');
+      }
+    }
+
+    function enablePlayerControls() {
+      playPauseBtn.disabled = false;
+      playPauseBtn.className = 'px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm flex items-center gap-2 cursor-pointer transition shadow-lg shadow-purple-600/30';
+      renderExportBtn.disabled = false;
+      renderExportBtn.className = 'px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all duration-200 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white cursor-pointer border border-purple-400/40 shadow-md shadow-purple-500/20';
+      audioStatusBadge.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+      audioStatusText.textContent = 'Ready to Play';
+      visualizerOverlay.style.display = 'none';
+
+      applyDspSettings();
+    }
+
+    /* Toggle Play / Pause */
+    async function togglePlayPause() {
+      if (!state.audioSrcUrl) return;
+
+      initAudioGraph();
+      if (state.audioCtx.state === 'suspended') {
+        await state.audioCtx.resume();
+      }
+
+      if (nativeAudio.paused) {
+        applyDspSettings();
+        try {
+          await nativeAudio.play();
+          state.isPlaying = true;
+          updatePlayButtonUI(true);
+          startVisualizerLoop();
+        } catch (e) {
+          console.error('Play failed:', e);
+        }
+      } else {
+        nativeAudio.pause();
+        state.isPlaying = false;
+        updatePlayButtonUI(false);
+      }
+    }
+
+    function updatePlayButtonUI(isPlaying) {
+      if (isPlaying) {
+        playIcon.innerHTML = `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;
+        playBtnLabel.textContent = 'Pause';
+        playPauseBtn.classList.add('glow-purple');
+        audioStatusBadge.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping';
+        audioStatusText.textContent = 'Playing Live';
+      } else {
+        playIcon.innerHTML = `<path d="M8 5v14l11-7z"/>`;
+        playBtnLabel.textContent = 'Play';
+        playPauseBtn.classList.remove('glow-purple');
+        audioStatusBadge.className = 'w-2.5 h-2.5 rounded-full bg-slate-400';
+        audioStatusText.textContent = 'Paused';
+      }
+    }
+
+    // Audio Event Listeners
+    nativeAudio.addEventListener('timeupdate', () => {
+      state.currentTime = nativeAudio.currentTime;
+      currentTimeDisplay.textContent = formatTime(state.currentTime);
+      if (nativeAudio.duration && !isNaN(nativeAudio.duration)) {
+        seekSlider.value = (nativeAudio.currentTime / nativeAudio.duration) * 100;
+      }
+    });
+
+    nativeAudio.addEventListener('ended', () => {
+      if (!state.loop) {
+        state.isPlaying = false;
+        updatePlayButtonUI(false);
+      }
+    });
+
+    seekSlider.addEventListener('input', (e) => {
+      if (nativeAudio.duration) {
+        const targetTime = (e.target.value / 100) * nativeAudio.duration;
+        nativeAudio.currentTime = targetTime;
+        currentTimeDisplay.textContent = formatTime(targetTime);
+      }
+    });
+
+    rewindBtn.addEventListener('click', () => {
+      nativeAudio.currentTime = Math.max(0, nativeAudio.currentTime - 5);
+    });
+
+    forwardBtn.addEventListener('click', () => {
+      nativeAudio.currentTime = Math.min(nativeAudio.duration || 0, nativeAudio.currentTime + 5);
+    });
+
+    loopBtn.addEventListener('click', () => {
+      state.loop = !state.loop;
+      nativeAudio.loop = state.loop;
+      if (state.loop) {
+        loopBtn.classList.add('bg-purple-900/60', 'text-purple-300', 'border-purple-600');
+        loopBtn.classList.remove('bg-night-700/50', 'text-slate-400');
+        loopLabel.textContent = 'Loop On';
+      } else {
+        loopBtn.classList.remove('bg-purple-900/60', 'text-purple-300', 'border-purple-600');
+        loopBtn.classList.add('bg-night-700/50', 'text-slate-400');
+        loopLabel.textContent = 'Loop Off';
+      }
+    });
+
+    /* Canvas Visualizer Loop */
+    function resizeCanvas() {
+      const rect = visualizerCanvas.getBoundingClientRect();
+      visualizerCanvas.width = rect.width * window.devicePixelRatio;
+      visualizerCanvas.height = rect.height * window.devicePixelRatio;
+      canvasCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function startVisualizerLoop() {
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+
+      const bufferLength = state.analyserNode ? state.analyserNode.frequencyBinCount : 128;
+      const dataArray = new Uint8Array(bufferLength);
+
+      function renderFrame() {
+        animFrameId = requestAnimationFrame(renderFrame);
+
+        const rect = visualizerCanvas.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+
+        canvasCtx.clearRect(0, 0, width, height);
+
+        if (!state.analyserNode) return;
+
+        if (state.vizMode === 'bars') {
+          state.analyserNode.getByteFrequencyData(dataArray);
+
+          const barCount = 48;
+          const barWidth = (width / barCount) - 2;
+          const step = Math.floor(bufferLength / barCount);
+
+          for (let i = 0; i < barCount; i++) {
+            const val = dataArray[i * step] || 0;
+            const barHeight = (val / 255) * (height - 8);
+
+            const x = i * (barWidth + 2);
+            const y = height - barHeight;
+
+            // Gradient bar
+            const grad = canvasCtx.createLinearGradient(0, y, 0, height);
+            grad.addColorStop(0, '#c084fc');
+            grad.addColorStop(0.5, '#818cf8');
+            grad.addColorStop(1, '#06b6d4');
+
+            canvasCtx.fillStyle = grad;
+            canvasCtx.beginPath();
+            canvasCtx.roundRect(x, y, barWidth, barHeight, [3, 3, 0, 0]);
+            canvasCtx.fill();
+          }
+        } else {
+          // Waveform Oscilloscope view
+          state.analyserNode.getByteTimeDomainData(dataArray);
+
+          canvasCtx.lineWidth = 2.5;
+          canvasCtx.strokeStyle = '#a855f7';
+          canvasCtx.shadowBlur = 10;
+          canvasCtx.shadowColor = '#c084fc';
+          canvasCtx.beginPath();
+
+          const sliceWidth = width / bufferLength;
+          let x = 0;
+
+          for (let i = 0; i < bufferLength; i++) {
+            const v = dataArray[i] / 128.0;
+            const y = (v * height) / 2;
+
+            if (i === 0) {
+              canvasCtx.moveTo(x, y);
+            } else {
+              canvasCtx.lineTo(x, y);
+            }
+            x += sliceWidth;
+          }
+
+          canvasCtx.lineTo(width, height / 2);
+          canvasCtx.stroke();
+          canvasCtx.shadowBlur = 0;
+        }
+      }
+
+      renderFrame();
+    }
+
+    // Visualizer switch mode buttons
+    document.getElementById('vizModeBars').addEventListener('click', (e) => {
+      state.vizMode = 'bars';
+      e.target.className = 'px-2 py-1 text-[11px] font-mono rounded bg-purple-600 text-white font-medium';
+      document.getElementById('vizModeWave').className = 'px-2 py-1 text-[11px] font-mono rounded text-slate-400 hover:text-white';
+    });
+
+    document.getElementById('vizModeWave').addEventListener('click', (e) => {
+      state.vizMode = 'wave';
+      e.target.className = 'px-2 py-1 text-[11px] font-mono rounded bg-purple-600 text-white font-medium';
+      document.getElementById('vizModeBars').className = 'px-2 py-1 text-[11px] font-mono rounded text-slate-400 hover:text-white';
+    });
+
+    /* Control Sliders Event Binding */
+
+    // Speed Slider
+    speedSlider.addEventListener('input', (e) => {
+      state.speed = parseFloat(e.target.value);
+      speedValText.textContent = state.speed.toFixed(2);
+      applyDspSettings();
+    });
+
+    // Pitch Mode Toggle (Lock Same Pitch vs Tape Drop)
+    modePreservePitch.addEventListener('click', () => {
+      state.preservePitch = true;
+      modePreservePitch.className = 'px-3 py-2 rounded-lg text-xs font-semibold bg-purple-600 text-white border border-purple-400/40 shadow-sm transition';
+      modeTapeDrop.className = 'px-3 py-2 rounded-lg text-xs font-semibold bg-night-700 text-slate-400 hover:text-white border border-night-600 transition';
+      pitchBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-800/50';
+      pitchBadge.textContent = 'Pitch Preserved';
+      applyDspSettings();
+      showToast('Pitch Locked: Speed changes will not alter musical key!', 'info');
+    });
+
+    modeTapeDrop.addEventListener('click', () => {
+      state.preservePitch = false;
+      modeTapeDrop.className = 'px-3 py-2 rounded-lg text-xs font-semibold bg-indigo-600 text-white border border-indigo-400/40 shadow-sm transition';
+      modePreservePitch.className = 'px-3 py-2 rounded-lg text-xs font-semibold bg-night-700 text-slate-400 hover:text-white border border-night-600 transition';
+      pitchBadge.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950/70 text-indigo-300 border border-indigo-800/50';
+      pitchBadge.textContent = 'Tape Pitch Drop';
+      applyDspSettings();
+      showToast('Tape Mode: Pitch drops along with tempo.', 'info');
+    });
+
+    // Pitch Semitones
+    pitchShiftSlider.addEventListener('input', (e) => {
+      state.pitchSemitones = parseInt(e.target.value, 10);
+      pitchShiftValText.textContent = (state.pitchSemitones > 0 ? '+' : '') + state.pitchSemitones + ' st';
+    });
+
+    // Reverb Mix
+    reverbMixSlider.addEventListener('input', (e) => {
+      state.reverbWet = parseFloat(e.target.value) / 100;
+      reverbMixValText.textContent = e.target.value;
+      applyDspSettings();
+    });
+
+    // Reverb Decay
+    reverbDecaySlider.addEventListener('input', (e) => {
+      state.reverbDecay = parseFloat(e.target.value);
+      reverbDecayValText.textContent = state.reverbDecay.toFixed(1);
+    });
+    reverbDecaySlider.addEventListener('change', () => {
+      refreshReverbConvolver();
+    });
+
+    // Reverb Damping
+    reverbDampSlider.addEventListener('input', (e) => {
+      state.reverbDamping = parseFloat(e.target.value);
+      reverbDampValText.textContent = Math.round(state.reverbDamping);
+      applyDspSettings();
+    });
+    reverbDampSlider.addEventListener('change', () => {
+      refreshReverbConvolver();
+    });
+
+    // Reverb Pre-delay
+    reverbPredelaySlider.addEventListener('input', (e) => {
+      state.reverbPredelay = parseFloat(e.target.value) / 1000;
+      reverbPredelayValText.textContent = e.target.value;
+      applyDspSettings();
+    });
+
+    // Bass Boost
+    bassBoostSlider.addEventListener('input', (e) => {
+      state.bassBoostDb = parseFloat(e.target.value);
+      bassBoostValText.textContent = '+' + state.bassBoostDb.toFixed(1);
+      applyDspSettings();
+    });
+
+    // LoFi High-cut Filter
+    lofiFilterSlider.addEventListener('input', (e) => {
+      state.lofiCutoffHz = parseFloat(e.target.value);
+      lofiFilterValText.textContent = Math.round(state.lofiCutoffHz);
+      applyDspSettings();
+    });
+
+    // Stereo Width
+    stereoWidthSlider.addEventListener('input', (e) => {
+      state.stereoWidth = parseFloat(e.target.value) / 100;
+      stereoWidthValText.textContent = e.target.value;
+    });
+
+    // Master Gain
+    masterGainSlider.addEventListener('input', (e) => {
+      state.masterGain = parseFloat(e.target.value) / 100;
+      masterGainValText.textContent = e.target.value;
+      applyDspSettings();
+    });
+
+    // Reset Buttons
+    document.getElementById('resetSpeedBtn').addEventListener('click', () => {
+      speedSlider.value = 0.85;
+      state.speed = 0.85;
+      speedValText.textContent = '0.85';
+      pitchShiftSlider.value = 0;
+      state.pitchSemitones = 0;
+      pitchShiftValText.textContent = '0 st';
+      applyDspSettings();
+    });
+
+    document.getElementById('resetReverbBtn').addEventListener('click', () => {
+      reverbMixSlider.value = 45;
+      state.reverbWet = 0.45;
+      reverbMixValText.textContent = '45';
+      reverbDecaySlider.value = 4.2;
+      state.reverbDecay = 4.2;
+      reverbDecayValText.textContent = '4.2';
+      reverbDampSlider.value = 3500;
+      state.reverbDamping = 3500;
+      reverbDampValText.textContent = '3500';
+      reverbPredelaySlider.value = 30;
+      state.reverbPredelay = 0.030;
+      reverbPredelayValText.textContent = '30';
+      refreshReverbConvolver();
+      applyDspSettings();
+    });
+
+    document.getElementById('resetToneBtn').addEventListener('click', () => {
+      bassBoostSlider.value = 4.5;
+      state.bassBoostDb = 4.5;
+      bassBoostValText.textContent = '+4.5';
+      lofiFilterSlider.value = 12000;
+      state.lofiCutoffHz = 12000;
+      lofiFilterValText.textContent = '12000';
+      stereoWidthSlider.value = 125;
+      state.stereoWidth = 1.25;
+      stereoWidthValText.textContent = '125';
+      masterGainSlider.value = 100;
+      state.masterGain = 1.0;
+      masterGainValText.textContent = '100';
+      applyDspSettings();
+    });
+
+    /* Preset Application System */
+    const presets = {
+      classic: {
+        speed: 0.85,
+        preservePitch: true,
+        reverbWet: 0.45,
+        reverbDecay: 4.5,
+        reverbDamping: 3800,
+        reverbPredelay: 0.035,
+        bassBoost: 4.5,
+        lofiCutoff: 14000,
+      },
+      lofi: {
+        speed: 0.82,
+        preservePitch: true,
+        reverbWet: 0.40,
+        reverbDecay: 3.2,
+        reverbDamping: 2600,
+        reverbPredelay: 0.025,
+        bassBoost: 6.0,
+        lofiCutoff: 7500,
+      },
+      bathroom: {
+        speed: 0.88,
+        preservePitch: true,
+        reverbWet: 0.75,
+        reverbDecay: 6.8,
+        reverbDamping: 2200,
+        reverbPredelay: 0.060,
+        bassBoost: 5.5,
+        lofiCutoff: 3800,
+      },
+      submerged: {
+        speed: 0.78,
+        preservePitch: true,
+        reverbWet: 0.60,
+        reverbDecay: 5.5,
+        reverbDamping: 1500,
+        reverbPredelay: 0.040,
+        bassBoost: 7.0,
+        lofiCutoff: 2100,
+      },
+      bassboost: {
+        speed: 0.85,
+        preservePitch: true,
+        reverbWet: 0.35,
+        reverbDecay: 3.5,
+        reverbDamping: 4500,
+        reverbPredelay: 0.020,
+        bassBoost: 10.0,
+        lofiCutoff: 16000,
+      },
+      tape: {
+        speed: 0.82,
+        preservePitch: false,
+        reverbWet: 0.40,
+        reverbDecay: 3.8,
+        reverbDamping: 3200,
+        reverbPredelay: 0.030,
+        bassBoost: 4.0,
+        lofiCutoff: 11000,
+      }
+    };
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.preset;
+        const config = presets[key];
+        if (!config) return;
+
+        // Visual active state
+        document.querySelectorAll('.preset-btn').forEach(b => {
+          b.classList.remove('border-purple-500/80', 'bg-purple-950/40');
+          b.classList.add('border-night-600/80', 'bg-night-800/80');
+        });
+        btn.classList.add('border-purple-500/80', 'bg-purple-950/40');
+        btn.classList.remove('border-night-600/80', 'bg-night-800/80');
+
+        // Apply
+        state.speed = config.speed;
+        speedSlider.value = config.speed;
+        speedValText.textContent = config.speed.toFixed(2);
+
+        state.preservePitch = config.preservePitch;
+        if (config.preservePitch) {
+          modePreservePitch.click();
+        } else {
+          modeTapeDrop.click();
+        }
+
+        state.reverbWet = config.reverbWet;
+        reverbMixSlider.value = Math.round(config.reverbWet * 100);
+        reverbMixValText.textContent = Math.round(config.reverbWet * 100);
+
+        state.reverbDecay = config.reverbDecay;
+        reverbDecaySlider.value = config.reverbDecay;
+        reverbDecayValText.textContent = config.reverbDecay.toFixed(1);
+
+        state.reverbDamping = config.reverbDamping;
+        reverbDampSlider.value = config.reverbDamping;
+        reverbDampValText.textContent = Math.round(config.reverbDamping);
+
+        state.reverbPredelay = config.reverbPredelay;
+        reverbPredelaySlider.value = Math.round(config.reverbPredelay * 1000);
+        reverbPredelayValText.textContent = Math.round(config.reverbPredelay * 1000);
+
+        state.bassBoostDb = config.bassBoost;
+        bassBoostSlider.value = config.bassBoost;
+        bassBoostValText.textContent = '+' + config.bassBoost.toFixed(1);
+
+        state.lofiCutoffHz = config.lofiCutoff;
+        lofiFilterSlider.value = config.lofiCutoff;
+        lofiFilterValText.textContent = Math.round(config.lofiCutoff);
+
+        refreshReverbConvolver();
+        applyDspSettings();
+
+        showToast(`Preset "${btn.querySelector('span').textContent.trim()}" applied!`, 'info');
+      });
+    });
+
+    /* High quality WSOLA (Waveform Similarity Overlap-Add) Time-Stretching for Offline Render */
+    function stretchBufferPreservePitch(inputBuffer, speedRate) {
+      if (Math.abs(speedRate - 1.0) < 0.005) {
+        return inputBuffer;
+      }
+
+      const numChannels = inputBuffer.numberOfChannels;
+      const sampleRate = inputBuffer.sampleRate;
+      const inputLength = inputBuffer.length;
+      
+      // Calculate output length based on target speed
+      const outputLength = Math.floor(inputLength / speedRate);
+      
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const outputBuffer = audioCtx.createBuffer(numChannels, outputLength, sampleRate);
+
+      // Window parameters for SOLA
+      const windowSize = Math.floor(sampleRate * 0.040); // 40ms window
+      const hopIn = Math.floor(windowSize * 0.5);
+      const hopOut = Math.floor(hopIn / speedRate);
+
+      // Hann window table
+      const hann = new Float32Array(windowSize);
+      for (let i = 0; i < windowSize; i++) {
+        hann[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (windowSize - 1)));
+      }
+
+      for (let c = 0; c < numChannels; c++) {
+        const inData = inputBuffer.getChannelData(c);
+        const outData = outputBuffer.getChannelData(c);
+
+        let inPos = 0;
+        let outPos = 0;
+
+        while (inPos + windowSize < inputLength && outPos + windowSize < outputLength) {
+          for (let i = 0; i < windowSize; i++) {
+            outData[outPos + i] += inData[inPos + i] * hann[i];
+          }
+          inPos += hopIn;
+          outPos += hopOut;
+        }
+      }
+
+      return outputBuffer;
+    }
+
+    /* Offline Audio Exporter: Renders exact graph to downloadable WAV */
+    async function renderAndExportAudio() {
+      if (!state.audioBuffer) {
+        showToast('Please load or play a track first.', 'error');
+        return;
+      }
+
+      // Open Modal
+      exportModal.classList.remove('hidden');
+      exportProgressBar.style.width = '10%';
+      exportPercentText.textContent = '10%';
+      exportStatusText.textContent = state.preservePitch 
+        ? 'Applying pitch-preserving time stretch...' 
+        : 'Slowing tape playback rate...';
+      exportActionContainer.classList.add('hidden');
+
+      // Pause live playback during export to allocate resources
+      if (!nativeAudio.paused) {
+        togglePlayPause();
+      }
+
+      setTimeout(async () => {
+        try {
+          const sampleRate = state.audioBuffer.sampleRate;
+          let sourceToRender = state.audioBuffer;
+
+          // 1. Time stretch
+          if (state.preservePitch) {
+            exportProgressBar.style.width = '25%';
+            exportPercentText.textContent = '25%';
+            sourceToRender = stretchBufferPreservePitch(state.audioBuffer, state.speed);
+          }
+
+          exportProgressBar.style.width = '45%';
+          exportPercentText.textContent = '45%';
+          exportStatusText.textContent = 'Building DSP offline audio graph...';
+
+          // Tail length for reverb decay
+          const reverbTailSeconds = state.reverbDecay + 0.5;
+          const renderedDuration = state.preservePitch 
+            ? (sourceToRender.duration + reverbTailSeconds)
+            : (state.audioBuffer.duration / state.speed + reverbTailSeconds);
+
+          const renderFrames = Math.floor(renderedDuration * sampleRate);
+          const offlineCtx = new OfflineAudioContext(2, renderFrames, sampleRate);
+
+          // Source Buffer Node
+          const offlineSource = offlineCtx.createBufferSource();
+          offlineSource.buffer = sourceToRender;
+
+          if (!state.preservePitch) {
+            offlineSource.playbackRate.value = state.speed;
+          }
+
+          // Bass Filter
+          const offBass = offlineCtx.createBiquadFilter();
+          offBass.type = 'lowshelf';
+          offBass.frequency.value = 95;
+          offBass.gain.value = state.bassBoostDb;
+
+          // Lo-Fi Filter
+          const offLofi = offlineCtx.createBiquadFilter();
+          offLofi.type = 'lowpass';
+          offLofi.frequency.value = state.lofiCutoffHz;
+          offLofi.Q.value = 0.7;
+
+          // Reverb Dry & Wet paths
+          const offDry = offlineCtx.createGain();
+          const dryVal = Math.cos(state.reverbWet * 0.5 * Math.PI);
+          const wetVal = Math.sin(state.reverbWet * 0.5 * Math.PI) * 1.25;
+          offDry.gain.value = dryVal;
+
+          const offDelay = offlineCtx.createDelay(1.0);
+          offDelay.delayTime.value = state.reverbPredelay;
+
+          const offDamp = offlineCtx.createBiquadFilter();
+          offDamp.type = 'lowpass';
+          offDamp.frequency.value = state.reverbDamping;
+
+          const offConvolver = offlineCtx.createConvolver();
+          offConvolver.buffer = createReverbImpulse(offlineCtx, state.reverbDecay, state.reverbDamping);
+
+          const offWet = offlineCtx.createGain();
+          offWet.gain.value = wetVal;
+
+          // Limiter
+          const offCompressor = offlineCtx.createDynamicsCompressor();
+          offCompressor.threshold.value = -1.5;
+          offCompressor.knee.value = 8.0;
+          offCompressor.ratio.value = 8.0;
+          offCompressor.attack.value = 0.003;
+          offCompressor.release.value = 0.15;
+
+          // Master Gain
+          const offMaster = offlineCtx.createGain();
+          offMaster.gain.value = state.masterGain;
+
+          // Wire graph:
+          offlineSource.connect(offBass);
+          offBass.connect(offLofi);
+
+          // Dry
+          offLofi.connect(offDry);
+          offDry.connect(offCompressor);
+
+          // Wet
+          offLofi.connect(offDelay);
+          offDelay.connect(offDamp);
+          offDamp.connect(offConvolver);
+          offConvolver.connect(offWet);
+          offWet.connect(offCompressor);
+
+          // Compressor -> Master -> Destination
+          offCompressor.connect(offMaster);
+          offMaster.connect(offlineCtx.destination);
+
+          // Start Source
+          offlineSource.start(0);
+
+          exportProgressBar.style.width = '70%';
+          exportPercentText.textContent = '70%';
+          exportStatusText.textContent = 'Rendering audio spectrum...';
+
+          // Render
+          const renderedBuffer = await offlineCtx.startRendering();
+
+          exportProgressBar.style.width = '90%';
+          exportPercentText.textContent = '90%';
+          exportStatusText.textContent = 'Encoding lossless WAV file...';
+
+          // Encode to WAV Blob
+          const wavBlob = audioBufferToWavBlob(renderedBuffer);
+          const wavUrl = URL.createObjectURL(wavBlob);
+
+          exportProgressBar.style.width = '100%';
+          exportPercentText.textContent = '100%';
+          exportStatusText.textContent = 'Export completed successfully!';
+
+          // Set download button
+          downloadWavAnchor.href = wavUrl;
+          const pitchTag = state.preservePitch ? 'pitch_fixed' : 'tapedrop';
+          downloadWavAnchor.download = `${state.audioFileName}_slowed_reverb_${pitchTag}.wav`;
+          exportActionContainer.classList.remove('hidden');
+
+          showToast('WAV rendered! Click Download to save.', 'success');
+        } catch (err) {
+          console.error('Export failed:', err);
+          exportStatusText.textContent = 'Export error. Try a shorter track or refresh.';
+          showToast('Rendering error. Check console for details.', 'error');
+        }
+      }, 100);
+    }
+
+    renderExportBtn.addEventListener('click', renderAndExportAudio);
+    closeExportModalBtn.addEventListener('click', () => {
+      exportModal.classList.add('hidden');
+    });
+
+    /* Drag & Drop File Handlers */
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('border-purple-400', 'bg-night-800');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('border-purple-400', 'bg-night-800');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files && files.length > 0) {
+        loadAudioFile(files[0]);
+      }
+    });
+
+    audioFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        loadAudioFile(e.target.files[0]);
+      }
+    });
+
+    loadDemoBtn.addEventListener('click', () => {
+      loadDemoTrack();
+    });
+
+    playPauseBtn.addEventListener('click', togglePlayPause);
+
+    // Keyboard Space shortcut for Play/Pause
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT' && !nativeAudio.disabled && state.audioSrcUrl) {
+        e.preventDefault();
+        togglePlayPause();
+      }
+    });
+
+    // Initial page message
+    window.addEventListener('DOMContentLoaded', () => {
+      showToast('Welcome to ReverbIt! Drop any song or try the demo.', 'info');
+    });
+  </script>
+</body>
+</html>
